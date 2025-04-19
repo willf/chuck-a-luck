@@ -70,6 +70,11 @@
         color: #333;
       }
 
+      .enter-bet {
+        font-size: 1.5em;
+        color: #333;
+      }
+
       .die-button {
         font-size: 2em;
         padding: 10px;
@@ -90,16 +95,23 @@
     <div class="container">
       <h1>Chuck-A-Luck</h1>
       <h2>Inspired by Michael Tanoff and Creative Computing</h2>
-      <h3>With ♥️ from @willf</h3>
+      <h3>
+        With ♥️ from
+        <a href="https://github.com/willf/chuck-a-luck" target="_blank"
+          >@willf</a
+        >
+      </h3>
       <div id="game">
-        <p>Choose a number from 1 to 6. I will roll 3 dice.</p>
-        <p>If your number matches 1 die, I pay off even money.</p>
-        <p>Two dice, 2:1 &nbsp;&nbsp; Three dice, 3:1</p>
-        <p id="balance">You have $500. Make a bet.</p>
-        <p>Enter your bet:</p>
+        <p>
+          Choose a number from 1 to 6. I will roll 3 dice. If your number
+          matches 1 die, I pay off even money. Two dice, 2:1 &nbsp;&nbsp; Three
+          dice, 3:1
+        </p>
+        <p id="balance">You have $500.</p>
+        <p class="enter-bet">Enter your bet:</p>
         <input type="range" id="bet" min="1" max="500" value="1" />
         <p class="your-bet">Current bet: $<span id="betValue">1</span></p>
-        <p>Choose your number:</p>
+        <p class="enter-bet">Choose your number:</p>
         <div id="dice-buttons">
           <button class="die-button" data-value="1">1 🎲</button>
           <button class="die-button" data-value="2">2 🎲</button>
@@ -197,7 +209,7 @@
 
         document.getElementById(
           "balance"
-        ).textContent = `You have $${balance}. Make a bet.`;
+        ).textContent = `You have $${balance}.`;
       });
 
       document.getElementById("startOver").addEventListener("click", () => {
