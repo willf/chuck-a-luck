@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chuck-A-Luck</title>
+    <style>
+      body {
+        font-family: "Comic Sans MS", "Comic Sans", Georgia, Arial, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        font-size: 2.5em;
+        color: #0077cc;
+      }
+
+      h2,
+      h3 {
+        font-size: 1.2em;
+        color: #555;
+      }
+
+      #game p {
+        margin: 10px 0;
+      }
+
+      input {
+        margin: 10px 5px;
+        padding: 10px;
+        font-size: 1em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 1em;
+        color: #fff;
+        background-color: #0077cc;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #005fa3;
+      }
+
+      #results {
+        margin-top: 20px;
+        font-size: 1.2em;
+        color: #333;
+      }
+      .your-bet {
+        font-size: 1.5em;
+        color: #333;
+      }
+
+      .die-button {
+        font-size: 2em;
+        padding: 10px;
+        margin: 5px;
+        border: 2px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+        cursor: pointer;
+      }
+
+      .die-button.selected {
+        border-color: #0077cc;
+        background-color: #e6f7ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Chuck-A-Luck</h1>
+      <h2>Inspired by Michael Tanoff and Creative Computing</h2>
+      <h3>With ♥️ from @willf</h3>
+      <div id="game">
+        <p>Choose a number from 1 to 6. I will roll 3 dice.</p>
+        <p>If your number matches 1 die, I pay off even money.</p>
+        <p>Two dice, 2:1 &nbsp;&nbsp; Three dice, 3:1</p>
+        <p id="balance">You have $500. Make a bet.</p>
+        <p>Enter your bet:</p>
+        <input type="range" id="bet" min="1" max="500" value="1" />
+        <p class="your-bet">Current bet: $<span id="betValue">1</span></p>
+        <p>Choose your number:</p>
+        <div id="dice-buttons">
+          <button class="die-button" data-value="1">🎲</button>
+          <button class="die-button" data-value="2">🎲</button>
+          <button class="die-button" data-value="3">🎲</button>
+          <button class="die-button" data-value="4">🎲</button>
+          <button class="die-button" data-value="5">🎲</button>
+          <button class="die-button" data-value="6">🎲</button>
+        </div>
+        <button id="rollDice">Roll Dice</button>
+        <button id="startOver" style="display: none">Start Over</button>
+        <div id="results"></div>
+      </div>
+    </div>
+    <script>
+      let balance = 500;
+      let chosenNumber = null;
+
+      const betInput = document.getElementById("bet");
+      const betValueDisplay = document.getElementById("betValue");
+
+      // Update the displayed bet value when the slider is moved
+      betInput.addEventListener("input", () => {
+        betValueDisplay.textContent = betInput.value;
+      });
+
+      // Add event listeners to die buttons
+      const dieButtons = document.querySelectorAll(".die-button");
+      dieButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          // Remove 'selected' class from all buttons
+          dieButtons.forEach((btn) => btn.classList.remove("selected"));
+          // Add 'selected' class to the clicked button
+          button.classList.add("selected");
+          // Set the chosen number
+          chosenNumber = parseInt(button.getAttribute("data-value"));
+        });
+      });
+
+      document.getElementById("rollDice").addEventListener("click", () => {
+        const bet = parseFloat(betInput.value);
+        const resultsDiv = document.getElementById("results");
+
+        if (isNaN(bet)) {
+          resultsDiv.textContent = "What, you can't enter a bet?";
+          return;
+        }
+        if (bet <= 0) {
+          resultsDiv.textContent =
+            "Don't get cute! You can't bet less than $1!";
+          return;
+        }
+        if (bet > balance) {
+          resultsDiv.textContent = "Hey, I don't take IOUs!";
+          return;
+        }
+
+        if (!chosenNumber) {
+          resultsDiv.textContent = "You must choose a number!";
+          return;
+        }
+
+        const dice = [rollDie(), rollDie(), rollDie()];
+        const matches = dice.filter((die) => die === chosenNumber).length;
+
+        let winnings = 0;
+        if (matches === 1) winnings = bet;
+        if (matches === 2) winnings = bet * 2;
+        if (matches === 3) winnings = bet * 3;
+
+        balance += winnings - bet;
+
+        resultsDiv.innerHTML = `
+    <p>You rolled: ${dice.join(", ")}</p>
+    <p>Number of matches: ${matches}.</p>
+    <p>${winnings > 0 ? `You won $${winnings}!` : `You lost $${bet}.`}</p>
+    <p>Your new balance is $${balance}.</p>
+  `;
+        if (balance > 0) {
+          // update the max on the bet slider
+          betInput.max = balance;
+          betInput.value = Math.min(betInput.value, balance);
+          betValueDisplay.textContent = betInput.value;
+        }
+        if (balance <= 0) {
+          resultsDiv.innerHTML += `
+      <p style="color: red; font-size: 1.5em; font-weight: bold;">
+        GAME OVER! You ran out of money. Better luck next time!
+      </p>
+      <p style="color: #555; font-style: italic;">
+        Maybe gambling isn't your thing... 🤷‍♂️
+      </p>`;
+          document.getElementById("rollDice").disabled = true;
+          document.getElementById("startOver").style.display = "inline-block";
+        }
+
+        document.getElementById(
+          "balance"
+        ).textContent = `You have $${balance}. Make a bet.`;
+      });
+
+      document.getElementById("startOver").addEventListener("click", () => {
+        balance = 500;
+        chosenNumber = null;
+        document.getElementById("bet").value = 1;
+        document.getElementById("betValue").textContent = 1;
+        document.getElementById("results").innerHTML = "";
+        document.getElementById(
+          "balance"
+        ).textContent = `You have $${balance}. Make a bet.`;
+        document.getElementById("rollDice").disabled = false;
+        document.getElementById("startOver").style.display = "none";
+
+        // Reset die button selection
+        const dieButtons = document.querySelectorAll(".die-button");
+        dieButtons.forEach((btn) => btn.classList.remove("selected"));
+      });
+
+      function rollDie() {
+        return Math.floor(Math.random() * 6) + 1;
+      }
+    </script>
+  </body>
+</html>
